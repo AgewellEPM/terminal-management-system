@@ -42,9 +42,9 @@ class TerminalControlCenter:
                 "pid": None
             },
             "hotkey_listener": {
-                "script": "global_hotkey_listener.py",
-                "name": "⌨️ Global Hotkeys",
-                "description": "Cmd+Shift+8/9 terminal capture",
+                "script": "unified_hotkey_system.py",
+                "name": "⌨️ Unified Hotkeys",
+                "description": "Cmd+Shift+0/8/9 - Screenshot, capture, auto-upload",
                 "pid": None
             }
         }

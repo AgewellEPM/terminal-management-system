@@ -14,7 +14,9 @@ class GlobalHotkeyListener:
         self.pressed_keys = set()
         self.hotkey_combo_9 = {keyboard.Key.cmd, keyboard.Key.shift, keyboard.KeyCode.from_char('9')}
         self.hotkey_combo_8 = {keyboard.Key.cmd, keyboard.Key.shift, keyboard.KeyCode.from_char('8')}
+        self.hotkey_combo_0 = {keyboard.Key.cmd, keyboard.Key.shift, keyboard.KeyCode.from_char('0')}
         self.listener = None
+        self.smart_upload_process = None
         
     def on_key_press(self, key):
         """Handle key press events"""
@@ -29,6 +31,11 @@ class GlobalHotkeyListener:
         elif self.hotkey_combo_8.issubset(self.pressed_keys):
             print("📝 Command+Shift+8 detected!")
             self.trigger_textedit_capture()
+            
+        # Check if Command+Shift+0 is pressed (smart upload)
+        elif self.hotkey_combo_0.issubset(self.pressed_keys):
+            print("📸 Command+Shift+0 detected!")
+            self.trigger_smart_upload()
     
     def on_key_release(self, key):
         """Handle key release events"""
@@ -55,13 +62,37 @@ class GlobalHotkeyListener:
         except Exception as e:
             print(f"❌ Failed to launch TextEdit capture: {e}")
     
+    def trigger_smart_upload(self):
+        """Launch the smart upload system (Command+Shift+0)"""
+        try:
+            # Start auto upload system if not running
+            if not self.smart_upload_process or self.smart_upload_process.poll() is not None:
+                self.smart_upload_process = subprocess.Popen([
+                    'python3', '/Users/lukekist/terminal-management-system/auto_upload_anywhere.py'
+                ])
+                print("📸 Auto Upload System activated!")
+            
+            # Trigger screenshot capture
+            time.sleep(0.2)
+            subprocess.run([
+                'osascript', '-e',
+                '''
+                tell application "System Events"
+                    keystroke "0" using {command down, shift down}
+                end tell
+                '''
+            ])
+        except Exception as e:
+            print(f"❌ Failed to launch smart upload: {e}")
+    
     def start_listening(self):
         """Start the global hotkey listener"""
         print("⌨️ GLOBAL HOTKEY LISTENER ACTIVE")
         print("=================================")
         print("🔥 Command+Shift+9: Capture terminal → Save to files")
         print("📝 Command+Shift+8: Capture terminal → Open in TextEdit")
-        print("📸 Both show camera cursor for window selection")
+        print("📸 Command+Shift+0: Smart screenshot → Auto-upload at cursor")
+        print("📸 All show camera cursor for window selection")
         print("Press Ctrl+C to stop")
         print()
         
