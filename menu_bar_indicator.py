@@ -21,18 +21,18 @@ except ImportError:
 
 class UploadStatusIndicator(rumps.App):
     def __init__(self):
-        super(UploadStatusIndicator, self).__init__("📸", quit_button=None)
+        super(UploadStatusIndicator, self).__init__("🐷", quit_button=None)
         
         self.status_file = Path.home() / ".claude" / "upload_status.txt"
         self.status_file.parent.mkdir(exist_ok=True)
         
-        # Status states
+        # Status states with pig variations
         self.states = {
-            "ready": "🟢",      # Green - idle/ready
-            "processing": "🟡",  # Yellow - taking screenshot/processing
-            "uploading": "🟡",   # Yellow - uploading
-            "error": "🔴",       # Red - error/broken
-            "success": "✅"      # Success - briefly shown
+            "ready": "🐷",      # Normal pig - idle/ready
+            "processing": "🐷🟡",  # Pig with yellow - taking screenshot/processing
+            "uploading": "🐷⬆️",   # Pig with up arrow - uploading
+            "error": "🐷❌",       # Pig with X - error/broken
+            "success": "🐷✅"      # Pig with check - briefly shown
         }
         
         self.current_state = "ready"
@@ -47,7 +47,9 @@ class UploadStatusIndicator(rumps.App):
             rumps.MenuItem("Status: Ready", callback=None),
             rumps.separator,
             rumps.MenuItem("Restart System", self.restart_system),
-            rumps.MenuItem("Quit", self.quit_application)
+            rumps.MenuItem("Stop System", self.stop_system),
+            rumps.separator,
+            rumps.MenuItem("Quit Menu Bar", self.quit_application)
         ]
         
         # Start monitoring
@@ -83,7 +85,7 @@ class UploadStatusIndicator(rumps.App):
         if status in self.states:
             self.title = self.states[status]
         else:
-            self.title = "📸"
+            self.title = "🐷"
             
         # Update status menu item
         status_text = {
@@ -119,9 +121,27 @@ class UploadStatusIndicator(rumps.App):
             
         except Exception as e:
             self.update_status("error")
+    
+    def stop_system(self, _):
+        """Stop the hotkey system only"""
+        try:
+            os.system("pkill -f 'unified_hotkey'")
+            
+            rumps.notification(
+                title="System Stopped",
+                subtitle="Hotkey system has been stopped",
+                message="Use 'Restart System' to start again"
+            )
+            
+            self.update_status("ready")
+            
+        except Exception as e:
+            self.update_status("error")
             
     def quit_application(self, _):
-        """Quit the application"""
+        """Quit the menu bar application"""
+        # Stop the hotkey system too
+        os.system("pkill -f 'unified_hotkey'")
         rumps.quit_application()
 
 def write_status(status):
